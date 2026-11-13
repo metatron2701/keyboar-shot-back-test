@@ -25,10 +25,6 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "part_type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private PartType partType;
-
     @Column(name = "name", nullable = false, length = 200)
     private String name;
 
