@@ -1,4 +1,4 @@
-package com.green.keyboard_project.dto;
+package com.green.keyboard_project.dto.order;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;

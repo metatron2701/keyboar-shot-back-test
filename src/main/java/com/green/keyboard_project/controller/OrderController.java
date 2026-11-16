@@ -1,8 +1,8 @@
 package com.green.keyboard_project.controller;
 
 import com.green.keyboard_project.dto.ApiResponse;
-import com.green.keyboard_project.dto.OrderCreateRequest;
-import com.green.keyboard_project.dto.OrderResponse;
+import com.green.keyboard_project.dto.order.OrderCreateRequest;
+import com.green.keyboard_project.dto.order.OrderResponse;
 import com.green.keyboard_project.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

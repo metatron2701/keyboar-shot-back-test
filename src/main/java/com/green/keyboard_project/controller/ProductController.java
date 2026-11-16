@@ -1,7 +1,7 @@
 package com.green.keyboard_project.controller;
 
 import com.green.keyboard_project.dto.ApiResponse;
-import com.green.keyboard_project.dto.ProductResponse;
+import com.green.keyboard_project.dto.product.ProductResponse;
 import com.green.keyboard_project.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

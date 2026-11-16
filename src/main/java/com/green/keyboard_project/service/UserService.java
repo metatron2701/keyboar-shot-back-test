@@ -1,8 +1,8 @@
 package com.green.keyboard_project.service;
 
-import com.green.keyboard_project.dto.UserLoginRequest;
-import com.green.keyboard_project.dto.UserResponse;
-import com.green.keyboard_project.dto.UserSignUpRequest;
+import com.green.keyboard_project.dto.user.UserLoginRequest;
+import com.green.keyboard_project.dto.user.UserResponse;
+import com.green.keyboard_project.dto.user.UserSignUpRequest;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.InvalidStateException;
 import com.green.keyboard_project.exceptions.ResourceNotFountException;

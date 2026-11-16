@@ -1,9 +1,9 @@
 package com.green.keyboard_project.service;
 
-import com.green.keyboard_project.dto.OrderCreateRequest;
-import com.green.keyboard_project.dto.OrderItemRequest;
-import com.green.keyboard_project.dto.OrderItemResponse;
-import com.green.keyboard_project.dto.OrderResponse;
+import com.green.keyboard_project.dto.order.OrderCreateRequest;
+import com.green.keyboard_project.dto.order.OrderItemRequest;
+import com.green.keyboard_project.dto.order.OrderItemResponse;
+import com.green.keyboard_project.dto.order.OrderResponse;
 import com.green.keyboard_project.entity.Order;
 import com.green.keyboard_project.entity.OrderItem;
 import com.green.keyboard_project.entity.Product;

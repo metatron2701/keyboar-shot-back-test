@@ -1,6 +1,6 @@
 package com.green.keyboard_project.service;
 
-import com.green.keyboard_project.dto.CartItemResponse;
+import com.green.keyboard_project.dto.cart.CartItemResponse;
 import com.green.keyboard_project.entity.CartItem;
 import com.green.keyboard_project.entity.Product;
 import com.green.keyboard_project.entity.User;

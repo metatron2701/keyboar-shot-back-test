@@ -1,4 +1,4 @@
-package com.green.keyboard_project.dto;
+package com.green.keyboard_project.dto.cart;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

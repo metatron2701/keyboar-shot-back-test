@@ -1,7 +1,7 @@
 package com.green.keyboard_project.controller;
 
 import com.green.keyboard_project.dto.ApiResponse;
-import com.green.keyboard_project.dto.CartItemResponse;
+import com.green.keyboard_project.dto.cart.CartItemResponse;
 import com.green.keyboard_project.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,6 +1,6 @@
 package com.green.keyboard_project.service;
 
-import com.green.keyboard_project.dto.ProductResponse;
+import com.green.keyboard_project.dto.product.ProductResponse;
 import com.green.keyboard_project.entity.Product;
 import com.green.keyboard_project.exceptions.InvalidStateException;
 import com.green.keyboard_project.exceptions.ResourceNotFountException;
