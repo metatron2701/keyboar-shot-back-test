@@ -10,8 +10,8 @@ import com.green.keyboard_project.entity.Product;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.InvalidStateException;
 import com.green.keyboard_project.exceptions.ResourceNotFountException;
-import com.green.keyboard_project.repository.OrderItemRepository;
-import com.green.keyboard_project.repository.OrderRepository;
+import com.green.keyboard_project.repository.orders.OrderItemRepository;
+import com.green.keyboard_project.repository.orders.OrderRepository;
 import com.green.keyboard_project.repository.ProductRepository;
 import com.green.keyboard_project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,20 +36,37 @@ public class OrderService {
      * 주문 생성 (주문 및 주문 상품 일괄 저장)
      * - @Transactional: 중간에 예외 발생 시 모든 DB 작업을 롤백하여 데이터 정합성을 보장합니다.
      */
+    /**
+     * 주문 생성 (기본 오버로딩: userId 없을 때 request의 이메일로 조회)
+     */
     @Transactional
     public OrderResponse createOrder(OrderCreateRequest request) {
+        return createOrder(null, request);
+    }
+
+    /**
+     * 주문 생성 (주문 및 주문 상품 일괄 저장)
+     * - @Transactional: 중간에 예외 발생 시 모든 DB 작업을 롤백하여 데이터 정합성을 보장합니다.
+     */
+    @Transactional
+    public OrderResponse createOrder(Integer userId, OrderCreateRequest request) {
         // [1] 주문 상품 목록 필수값 검증
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new InvalidStateException("주문 상품 목록이 비어 있습니다.");
         }
 
-        // [2] 주문자 회원 조회 및 유효성 검증
-        if (request.getOrdererEmail() == null || request.getOrdererEmail().isBlank()) {
-            throw new InvalidStateException("주문자 이메일은 필수입니다.");
+        // [2] 주문자 회원 조회 및 유효성 검증 (인증된 userId 우선, 없으면 request의 이메일 조회)
+        User user;
+        if (userId != null) {
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFountException("등록된 회원 정보를 찾을 수 없습니다. (ID: " + userId + ")"));
+        } else {
+            if (request.getOrdererEmail() == null || request.getOrdererEmail().isBlank()) {
+                throw new InvalidStateException("주문자 이메일은 필수입니다.");
+            }
+            user = userRepository.findByEmail(request.getOrdererEmail())
+                    .orElseThrow(() -> new ResourceNotFountException("등록된 회원 정보를 찾을 수 없습니다. (이메일: " + request.getOrdererEmail() + ")"));
         }
-
-        User user = userRepository.findByEmail(request.getOrdererEmail())
-                .orElseThrow(() -> new ResourceNotFountException("등록된 회원 정보를 찾을 수 없습니다. (이메일: " + request.getOrdererEmail() + ")"));
 
         if (user.isDeleted()) {
             throw new InvalidStateException("탈퇴한 회원은 주문할 수 없습니다.");

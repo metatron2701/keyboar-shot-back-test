@@ -7,6 +7,7 @@ import com.green.keyboard_project.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +24,10 @@ public class OrderController {
      */
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
+            @AuthenticationPrincipal Integer userId,
             @Valid @RequestBody OrderCreateRequest request
     ) {
-        OrderResponse response = orderService.createOrder(request);
+        OrderResponse response = orderService.createOrder(userId, request);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 

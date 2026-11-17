@@ -4,7 +4,9 @@ import com.green.keyboard_project.dto.cart.CartItemResponse;
 import com.green.keyboard_project.entity.CartItem;
 import com.green.keyboard_project.entity.Product;
 import com.green.keyboard_project.entity.User;
-import com.green.keyboard_project.repository.CartItemRepository;
+import com.green.keyboard_project.exceptions.InvalidStateException;
+import com.green.keyboard_project.exceptions.ResourceNotFountException;
+import com.green.keyboard_project.repository.cart.CartItemRepository;
 import com.green.keyboard_project.repository.ProductRepository;
 import com.green.keyboard_project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,13 +50,24 @@ public class CartService {
      */
     @Transactional
     public void addCartItem(int userId, int productId, int quantity) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Product product = productRepository.findById(productId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFountException("사용자를 찾을 수 없습니다. (ID: " + userId + ")"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFountException("상품을 찾을 수 없습니다. (ID: " + productId + ")"));
+
+        // 🛡️ 신규/기존 공통: 0 이하이거나 단건 수량이 재고수를 초과하면 즉시 거부
+        if (quantity <= 0 || quantity > product.getStockQuantity()) {
+            throw new InvalidStateException("유효하지 않은 상품 갯수 입니다.");
+        }
 
         Optional<CartItem> existingItem = cartItemRepository.findByUserAndProduct(user, product);
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
+            // 🛡️ 기존 수량과의 합산이 재고수를 초과해도 거부
+            if (item.getQuantity() + quantity > product.getStockQuantity()) {
+                throw new InvalidStateException("유효하지 않은 상품 갯수 입니다.");
+            }
             item.setQuantity(item.getQuantity() + quantity);
             item.setUpdatedAt(LocalDateTime.now());
         } else {
@@ -74,12 +87,19 @@ public class CartService {
      */
     @Transactional
     public void updateCartItemQuantity(int userId, int productId, int quantity) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Product product = productRepository.findById(productId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFountException("사용자를 찾을 수 없습니다. (ID: " + userId + ")"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFountException("상품을 찾을 수 없습니다. (ID: " + productId + ")"));
+
+        if (quantity <= 0 || quantity > product.getStockQuantity()) {
+            throw new InvalidStateException("유효하지 않은 상품 갯수 입니다.");
+        }
+
         Optional<CartItem> existingItem = cartItemRepository.findByUserAndProduct(user, product);
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
-            item.setQuantity(Math.max(1, quantity));
+            item.setQuantity(quantity);
             item.setUpdatedAt(LocalDateTime.now());
         }
     }
@@ -89,8 +109,10 @@ public class CartService {
      */
     @Transactional
     public void removeCartItem(int userId, int productId) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Product product = productRepository.findById(productId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFountException("사용자를 찾을 수 없습니다. (ID: " + userId + ")"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFountException("상품을 찾을 수 없습니다. (ID: " + productId + ")"));
         cartItemRepository.findByUserAndProduct(user, product)
                 .ifPresent(cartItemRepository::delete);
     }
@@ -100,7 +122,8 @@ public class CartService {
      */
     @Transactional
     public void clearCart(int userId) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFountException("사용자를 찾을 수 없습니다. (ID: " + userId + ")"));
         cartItemRepository.deleteByUser(user);
     }
 }
