@@ -9,7 +9,8 @@ import com.green.keyboard_project.entity.OrderItem;
 import com.green.keyboard_project.entity.Product;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.InvalidStateException;
-import com.green.keyboard_project.exceptions.ResourceNotFountException;
+import com.green.keyboard_project.exceptions.ResourceNotFoundException;
+import com.green.keyboard_project.repository.cart.CartItemRepository;
 import com.green.keyboard_project.repository.orders.OrderItemRepository;
 import com.green.keyboard_project.repository.orders.OrderRepository;
 import com.green.keyboard_project.repository.ProductRepository;
@@ -31,6 +32,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository; // 주문 상품(OrderItem) 데이터 접근 계층
     private final ProductRepository productRepository;     // 상품(Product) 조회 및 재고 갱신용
     private final UserRepository userRepository;           // 주문자 회원(User) 조회용
+    private final CartItemRepository cartItemRepository;    // 장바구니(Cart) 조회용
 
     /**
      * 주문 생성 (주문 및 주문 상품 일괄 저장)
@@ -59,13 +61,13 @@ public class OrderService {
         User user;
         if (userId != null) {
             user = userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFountException("등록된 회원 정보를 찾을 수 없습니다. (ID: " + userId + ")"));
+                    .orElseThrow(() -> new ResourceNotFoundException("등록된 회원 정보를 찾을 수 없습니다. (ID: " + userId + ")"));
         } else {
             if (request.getOrdererEmail() == null || request.getOrdererEmail().isBlank()) {
                 throw new InvalidStateException("주문자 이메일은 필수입니다.");
             }
             user = userRepository.findByEmail(request.getOrdererEmail())
-                    .orElseThrow(() -> new ResourceNotFountException("등록된 회원 정보를 찾을 수 없습니다. (이메일: " + request.getOrdererEmail() + ")"));
+                    .orElseThrow(() -> new ResourceNotFoundException("등록된 회원 정보를 찾을 수 없습니다. (이메일: " + request.getOrdererEmail() + ")"));
         }
 
         if (user.isDeleted()) {
@@ -101,7 +103,14 @@ public class OrderService {
         for (OrderItemRequest itemReq : request.getItems()) {
             // 상품 조회
             Product product = productRepository.findById(itemReq.getProductId())
-                    .orElseThrow(() -> new ResourceNotFountException("상품을 찾을 수 없습니다. (ID: " + itemReq.getProductId() + ")"));
+                    .orElseThrow(() -> new ResourceNotFoundException("상품을 찾을 수 없습니다. (ID: " + itemReq.getProductId() + ")"));
+
+            if (!product.isActive()) {
+                throw new InvalidStateException(product.getName() + "은(는) 현재 판매중인 상품이 아닙니다.");
+            }
+
+            cartItemRepository.findByUserAndProduct(user, product)
+                    .orElseThrow(() -> new InvalidStateException(product.getName() + "은(는) 장바구니에 담겨있지 않은 상품입니다."));
 
             // 재고 수량 확인
             if (product.getStockQuantity() < itemReq.getQuantity()) {
@@ -175,7 +184,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(int orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFountException("주문을 찾을 수 없습니다. (ID: " + orderId + ")"));
+                .orElseThrow(() -> new ResourceNotFoundException("주문을 찾을 수 없습니다. (ID: " + orderId + ")"));
 
         List<OrderItem> items = orderItemRepository.findByOrder(order);
         return toOrderResponse(order, items);
@@ -187,7 +196,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderResponse getOrderByOrderNumber(String orderNumber) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new ResourceNotFountException("주문을 찾을 수 없습니다. (주문번호: " + orderNumber + ")"));
+                .orElseThrow(() -> new ResourceNotFoundException("주문을 찾을 수 없습니다. (주문번호: " + orderNumber + ")"));
 
         List<OrderItem> items = orderItemRepository.findByOrder(order);
         return toOrderResponse(order, items);

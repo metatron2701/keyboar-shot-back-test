@@ -21,8 +21,8 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     // 요청한 데이터가 없을때
-    @ExceptionHandler(ResourceNotFountException.class)
-    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFountException e) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException e) {
         log.error(e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.fail(e.getMessage()));

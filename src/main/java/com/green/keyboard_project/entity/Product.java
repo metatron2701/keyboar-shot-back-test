@@ -44,6 +44,7 @@ public class Product {
     private boolean isActive;
 
     @Column(name = "version", nullable = false)
+    @Version
     private int version;
 
     @Column(name = "created_at", nullable = false)
@@ -52,8 +53,26 @@ public class Product {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public enum PartType {
-        HOUSING, PCB, SWITCH, KEYCAP
-    }
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
 
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt;
+
+    /**
+     * 카테고리 계층 구조(소분류 -> 대분류)를 기반으로 부품 구분을 동적 계산
+     */
+    public String getDerivedPartType() {
+        if (category == null) return null;
+        String parentId = (category.getParent() != null) 
+                ? category.getParent().getCategoryId() 
+                : category.getCategoryId();
+        if (parentId == null) return null;
+        
+        String lower = parentId.toLowerCase();
+        if (lower.contains("hous")) return "HOUSING";
+        if (lower.contains("switch")) return "SWITCH";
+        if (lower.contains("keycap")) return "KEYCAP";
+        return "PCB"; // keyboards, pcb
+    }
 }

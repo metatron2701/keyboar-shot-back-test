@@ -1,7 +1,7 @@
 package com.green.keyboard_project.service;
 
-import com.green.keyboard_project.dto.user.SignupRequest;
-import com.green.keyboard_project.dto.user.SignupResponse;
+import com.green.keyboard_project.dto.SignupRequest;
+import com.green.keyboard_project.dto.SignupResponse;
 import com.green.keyboard_project.entity.Address;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.*;

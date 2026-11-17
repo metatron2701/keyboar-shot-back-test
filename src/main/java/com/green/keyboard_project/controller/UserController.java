@@ -1,10 +1,6 @@
 package com.green.keyboard_project.controller;
 
 import com.green.keyboard_project.dto.*;
-import com.green.keyboard_project.dto.user.EmailAvailabilityResponse;
-import com.green.keyboard_project.dto.user.SignupEmailRequest;
-import com.green.keyboard_project.dto.user.SignupRequest;
-import com.green.keyboard_project.dto.user.SignupResponse;
 import com.green.keyboard_project.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

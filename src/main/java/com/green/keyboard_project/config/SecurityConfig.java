@@ -55,13 +55,9 @@ public class SecurityConfig {
 
     // 프론트(3000)에서 쿠키를 포함한 요청 허용
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(@Value("${cors.allowed-origin:http://localhost:3000}") String allowedOrigin) {
+    public CorsConfigurationSource corsConfigurationSource(@Value("${cors.allowed-origin}") String allowedOrigin) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                allowedOrigin,
-                "http://localhost:3000",
-                "http://127.0.0.1:3000"
-        ));
+        config.setAllowedOrigins(List.of(allowedOrigin));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // 쿠키 전달 허용 (허용 주소에 * 사용 불가)

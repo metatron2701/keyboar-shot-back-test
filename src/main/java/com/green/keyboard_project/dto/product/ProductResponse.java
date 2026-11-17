@@ -1,30 +1,43 @@
 package com.green.keyboard_project.dto.product;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.green.keyboard_project.entity.Product;
+import com.green.keyboard_project.entity.ProductSpec;
 
-import java.time.LocalDateTime;
-
-/**
- * 상품 조회 응답 DTO
- * - 클라이언트에게 상품의 상세 및 목록 정보를 전달하는 모델입니다.
- */
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-public class ProductResponse {
-    private int productId;            // 상품 고유 식별자 (PK)
-    private String categoryId;        // 카테고리 식별자
-    private String name;              // 상품명
-    private int basePrice;            // 기본 단가
-    private int stockQuantity;        // 보유 재고 수량
-    private String thumbnailURL;       // 썸네일 이미지 URL
-    private String description;       // 상품 상세 설명
-    private boolean isActive;         // 판매 활성화 여부
-    private int version;              // 상품 정보 버전
-    private LocalDateTime createdAt;  // 상품 등록 일시
-    private LocalDateTime updateAt;   // 상품 수정 일시
+public record ProductResponse(
+        int productId,
+        String categoryName,
+        String categoryId,
+        String name,
+        int basePrice,
+        int stockQuantity,
+        String thumbnailUrl,
+        String description,
+        boolean active,
+        String layout,
+        String housingMaterial,
+        String supportPins,
+        Boolean isWireless,
+        Integer switchPin,
+        String switchType,
+        String keycapMaterial
+) {
+    public static ProductResponse from(Product product, ProductSpec spec) {
+        return new ProductResponse(
+                product.getProductId(),
+                product.getCategory().getName(),
+                product.getCategory().getCategoryId(),
+                product.getName(),
+                product.getBasePrice(),
+                product.getStockQuantity(),
+                product.getThumbnailUrl(),
+                product.getDescription(),
+                product.isActive(),
+                spec == null ? null : spec.getLayout(),
+                spec == null ? null : spec.getHousingMaterial(),
+                spec == null ? null : spec.getSupportPins(),
+                spec == null ? null : spec.getIsWireless(),
+                spec == null ? null : spec.getSwitchPin(),
+                spec == null ? null : spec.getSwitchType(),
+                spec == null ? null : spec.getKeycapMaterial());
+    }
 }
