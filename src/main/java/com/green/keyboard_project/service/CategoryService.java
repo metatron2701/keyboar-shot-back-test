@@ -2,7 +2,7 @@ package com.green.keyboard_project.service;
 
 import com.green.keyboard_project.dto.category.CategoryResponse;
 import com.green.keyboard_project.entity.Category;
-import com.green.keyboard_project.repository.CategoryRepository;
+import com.green.keyboard_project.repository.category.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

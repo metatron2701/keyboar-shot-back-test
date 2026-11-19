@@ -6,7 +6,7 @@ import com.green.keyboard_project.entity.Address;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.*;
 import com.green.keyboard_project.repository.AddressRepository;
-import com.green.keyboard_project.repository.UserRepository;
+import com.green.keyboard_project.repository.user.UserRepository;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

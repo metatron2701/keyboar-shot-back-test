@@ -1,4 +1,4 @@
-package com.green.keyboard_project.repository;
+package com.green.keyboard_project.repository.category;
 
 import com.green.keyboard_project.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;

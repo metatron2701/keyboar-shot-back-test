@@ -1,4 +1,4 @@
-package com.green.keyboard_project.repository;
+package com.green.keyboard_project.repository.user;
 
 import com.green.keyboard_project.entity.UserCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;

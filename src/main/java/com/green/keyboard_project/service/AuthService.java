@@ -4,7 +4,7 @@ import com.green.keyboard_project.entity.RefreshToken;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.UnauthenticatedException;
 import com.green.keyboard_project.repository.RefreshTokenRepository;
-import com.green.keyboard_project.repository.UserRepository;
+import com.green.keyboard_project.repository.user.UserRepository;
 import com.green.keyboard_project.security.JwtTokenProvider;
 import com.green.keyboard_project.security.TokenHasher;
 import io.jsonwebtoken.Claims;

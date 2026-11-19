@@ -1,4 +1,4 @@
-package com.green.keyboard_project.repository;
+package com.green.keyboard_project.repository.payment;
 
 import com.green.keyboard_project.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;

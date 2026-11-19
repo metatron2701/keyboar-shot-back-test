@@ -1,4 +1,4 @@
-package com.green.keyboard_project.repository;
+package com.green.keyboard_project.repository.product;
 
 import com.green.keyboard_project.entity.ProductSpec;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -6,15 +6,18 @@ import com.green.keyboard_project.dto.order.OrderItemResponse;
 import com.green.keyboard_project.dto.order.OrderResponse;
 import com.green.keyboard_project.entity.Order;
 import com.green.keyboard_project.entity.OrderItem;
+import com.green.keyboard_project.entity.Payment;
 import com.green.keyboard_project.entity.Product;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.InvalidStateException;
 import com.green.keyboard_project.exceptions.ResourceNotFoundException;
+import com.green.keyboard_project.repository.payment.PaymentRepository;
 import com.green.keyboard_project.repository.cart.CartItemRepository;
 import com.green.keyboard_project.repository.orders.OrderItemRepository;
 import com.green.keyboard_project.repository.orders.OrderRepository;
-import com.green.keyboard_project.repository.ProductRepository;
-import com.green.keyboard_project.repository.UserRepository;
+import com.green.keyboard_project.repository.product.ProductRepository;
+import com.green.keyboard_project.repository.user.UserRepository;
+import com.green.keyboard_project.service.payment.TossOrderConfirmClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,8 @@ public class OrderService {
     private final ProductRepository productRepository;     // 상품(Product) 조회 및 재고 갱신용
     private final UserRepository userRepository;           // 주문자 회원(User) 조회용
     private final CartItemRepository cartItemRepository;    // 장바구니(Cart) 조회용
+    private final PaymentRepository paymentRepository;     // 결제(Payment) 데이터 접근 계층
+    private final TossOrderConfirmClient tossOrderConfirmClient; // 토스페이먼츠 서버 최종 승인 클라이언트
 
     /**
      * 주문 생성 (주문 및 주문 상품 일괄 저장)
@@ -143,11 +148,11 @@ public class OrderService {
         order.setOrdererName(ordererName);
         order.setOrdererPhone(cleanPhone);
         order.setOrdererEmail(ordererEmail);
-        order.setOrderStatus(Order.OrderStatusType.ORDERED);
+        order.setOrderStatus(Order.OrderStatusType.PENDING);
         order.setTotalProductAmount(totalProductAmount);
         order.setDeliveryFee(deliveryFee);
         order.setFinalPayAmount(finalPayAmount);
-        order.setOrderedAt(LocalDateTime.now());
+        order.setOrderedAt(null);
         order.setCreatedAt(LocalDateTime.now());
 
         Order savedOrder = orderRepository.save(order);
@@ -200,6 +205,79 @@ public class OrderService {
 
         List<OrderItem> items = orderItemRepository.findByOrder(order);
         return toOrderResponse(order, items);
+    }
+
+    /**
+     * 토스페이먼츠 결제 승인 완료 처리 (실제 토스 서버 최종 승인 후 DB 반영)
+     */
+    @Transactional
+    public OrderResponse completePayment(String orderNumber, String paymentKey, int amount) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("주문 정보를 찾을 수 없습니다."));
+
+        if (order.getOrderStatus() == Order.OrderStatusType.ORDERED) {
+            List<OrderItem> items = orderItemRepository.findByOrder(order);
+            return toOrderResponse(order, items);
+        }
+
+        if (order.getOrderStatus() == Order.OrderStatusType.CANCELLED) {
+            throw new InvalidStateException("이미 취소된 주문입니다.");
+        }
+
+        if (order.getFinalPayAmount() != amount) {
+            throw new InvalidStateException("결제 금액이 주문 금액과 일치하지 않습니다. (요청 금액: " + amount + "원, 주문 금액: " + order.getFinalPayAmount() + "원)");
+        }
+
+        // 1. 토스페이먼츠 공식 서버 최종 승인 요청 (승인 실패 시 예외 발생 -> 롤백)
+        Payment.PaymentMethodType paymentMethod = tossOrderConfirmClient.confirmPayment(
+                paymentKey,
+                orderNumber,
+                order.getFinalPayAmount()
+        );
+
+        // 2. 주문 상태를 결제 완료(ORDERED)로 변경 및 결제 승인 시각 기록
+        order.setOrderStatus(Order.OrderStatusType.ORDERED);
+        order.setOrderedAt(LocalDateTime.now());
+        orderRepository.save(order);
+
+        // 3. 결제(Payment) 이력 저장
+        Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setPaymentMethod(paymentMethod);
+        payment.setPgProvider("TOSS");
+        payment.setPgTid(paymentKey);
+        payment.setPaymentStatus(Payment.PaymentStatusType.PAID);
+        payment.setPaidAmount(amount);
+        payment.setPaidAt(LocalDateTime.now());
+        paymentRepository.save(payment);
+
+        // 4. 결제 성공 시 회원의 장바구니 비우기
+        if (order.getUser() != null) {
+            cartItemRepository.deleteByUser(order.getUser());
+        }
+
+        List<OrderItem> items = orderItemRepository.findByOrder(order);
+        return toOrderResponse(order, items);
+    }
+
+    /**
+     * 결제 실패 시 주문 취소 및 차감된 재고 복구
+     */
+    @Transactional
+    public void failPayment(String orderNumber, String reason) {
+        orderRepository.findByOrderNumber(orderNumber).ifPresent(order -> {
+            if (order.getOrderStatus() == Order.OrderStatusType.PENDING) {
+                List<OrderItem> items = orderItemRepository.findByOrder(order);
+                for (OrderItem item : items) {
+                    Product product = item.getProduct();
+                    if (product != null) {
+                        product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+                    }
+                }
+                order.setOrderStatus(Order.OrderStatusType.CANCELLED);
+                orderRepository.save(order);
+            }
+        });
     }
 
     /**
