@@ -4,7 +4,7 @@ import com.green.keyboard_project.entity.RefreshToken;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.UnauthenticatedException;
 import com.green.keyboard_project.repository.RefreshTokenRepository;
-import com.green.keyboard_project.repository.user.UserRepository;
+import com.green.keyboard_project.repository.UserRepository;
 import com.green.keyboard_project.security.JwtTokenProvider;
 import com.green.keyboard_project.security.TokenHasher;
 import io.jsonwebtoken.Claims;
@@ -110,5 +110,20 @@ public class AuthService {
 
         User user = getActiveUser(saved.getUser().getUserId());
         return jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
+    }
+
+    // 회원탈퇴 연동: 비밀번호로 가입한 회원인지 확인 (현재는 이메일·비밀번호 가입만 있음)
+    @Transactional(readOnly = true)
+    public boolean isPasswordMember(int userId) {
+        return userRepository.findById(userId)
+                .map(u -> u.getPassword() != null && !u.getPassword().isBlank())
+                .orElse(false);
+    }
+
+    // 회원탈퇴 연동: 해당 회원의 Refresh Token 전부 삭제
+    // 탈퇴 트랜잭션 안에서 호출되므로, 삭제가 실패하면 탈퇴 전체가 롤백됨
+    @Transactional
+    public void revokeAllRefreshTokens(int userId) {
+        refreshTokenRepository.deleteByUser(userRepository.getReferenceById(userId));
     }
 }

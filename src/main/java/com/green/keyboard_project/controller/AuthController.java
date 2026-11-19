@@ -4,7 +4,9 @@ import com.green.keyboard_project.dto.ApiResponse;
 import com.green.keyboard_project.dto.auth.AuthUserResponse;
 import com.green.keyboard_project.dto.auth.LoginRequest;
 import com.green.keyboard_project.dto.auth.UserResponse;
+import com.green.keyboard_project.entity.Address;
 import com.green.keyboard_project.exceptions.UnauthenticatedException;
+import com.green.keyboard_project.repository.AddressRepository;
 import com.green.keyboard_project.security.AuthCookieFactory;
 import com.green.keyboard_project.service.AuthService;
 import jakarta.validation.Valid;
@@ -24,22 +26,25 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthCookieFactory cookieFactory;
+    private final AddressRepository addressRepository;
 
     // 로그인: 성공 시 토큰 2개를 쿠키로, 사용자 정보를 본문(data.user)으로 응답
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthUserResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthService.LoginResult result = authService.login(request.email(), request.password());
+        Address defaultAddress = addressRepository.findByUser_UserIdAndIsDefaultTrue(result.user().getUserId()).orElse(null);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieFactory.accessCookie(result.accessToken()).toString())
                 .header(HttpHeaders.SET_COOKIE, cookieFactory.refreshCookie(result.refreshToken()).toString())
-                .body(ApiResponse.ok(new AuthUserResponse(UserResponse.from(result.user()))));
+                .body(ApiResponse.ok(new AuthUserResponse(UserResponse.from(result.user(), defaultAddress))));
     }
 
     // 로그인한 사용자 정보 (새로고침 시 로그인 상태 복구용)
     @GetMapping("/me")
     public ApiResponse<AuthUserResponse> me(@AuthenticationPrincipal Integer userId) {
         if (userId == null) throw new UnauthenticatedException(AuthService.LOGIN_REQUIRED);
-        return ApiResponse.ok(new AuthUserResponse(UserResponse.from(authService.getActiveUser(userId))));
+        Address defaultAddress = addressRepository.findByUser_UserIdAndIsDefaultTrue(userId).orElse(null);
+        return ApiResponse.ok(new AuthUserResponse(UserResponse.from(authService.getActiveUser(userId), defaultAddress)));
     }
 
     // 로그아웃: DB 토큰 삭제 결과와 관계없이 쿠키는 만료

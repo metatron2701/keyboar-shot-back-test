@@ -6,9 +6,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
@@ -44,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/signup", "/api/auth/check-email").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                         // TODO: 보호 페이지 목록(회의 안건) 확정 후 장바구니·주문·마이페이지 API 추가
                         .anyRequest().permitAll())
                 .exceptionHandling(e -> e
@@ -55,12 +60,15 @@ public class SecurityConfig {
 
     // 프론트(3000)에서 쿠키를 포함한 요청 허용
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(@Value("${cors.allowed-origin}") String allowedOrigin) {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${cors.allowed-origin:http://localhost:3000}") String allowedOrigin) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(allowedOrigin));
+        config.setAllowedOriginPatterns(List.of(allowedOrigin, "http://127.0.0.1:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // 쿠키 전달 허용 (허용 주소에 * 사용 불가)
+        config.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

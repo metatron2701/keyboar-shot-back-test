@@ -15,4 +15,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
 
     // 특정 주문(Order)에 속한 주문 상품 목록 조회
     List<OrderItem> findByOrder(Order order);
+
+    boolean existsByManualBuild_ManualBuildId(int manualBuildId);
+
+    boolean existsByAutoBuild_AutoBuildId(int autoBuildId);
 }

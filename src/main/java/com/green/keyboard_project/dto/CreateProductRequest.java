@@ -1,4 +1,4 @@
-package com.green.keyboard_project.dto.product;
+package com.green.keyboard_project.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,8 +16,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CreateProductRequest {
     @NotBlank
-    @Size(max = 100)
-    private String categoryName;
+    @Size(max = 50)
+    private String categoryId;
 
     @NotBlank
     @Size(max = 200)

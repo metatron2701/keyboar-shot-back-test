@@ -42,4 +42,7 @@ public class UserCoupon {
     @Column(name = "issued_at", nullable = false)
     private LocalDateTime issuedAt;
 
+    @Column(name = "discount_amount", nullable = true)
+    private Integer discountAmount;
+
 }

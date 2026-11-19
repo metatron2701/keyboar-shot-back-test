@@ -1,7 +1,7 @@
 package com.green.keyboard_project.config;
 
 import com.green.keyboard_project.entity.User;
-import com.green.keyboard_project.repository.user.UserRepository;
+import com.green.keyboard_project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;

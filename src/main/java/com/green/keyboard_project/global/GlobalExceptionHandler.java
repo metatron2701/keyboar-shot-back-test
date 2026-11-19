@@ -11,6 +11,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import com.green.keyboard_project.exceptions.InvalidProductImageException;
 
 import java.util.List;
 
@@ -19,6 +21,17 @@ import java.util.List;
 // 로그를 남기기 위한 어노테이션
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUploadTooLarge(MaxUploadSizeExceededException e) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ApiResponse.fail("이미지 용량은 5MB 이하만 업로드할 수 있습니다."));
+    }
+
+    @ExceptionHandler(InvalidProductImageException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidProductImage(InvalidProductImageException e) {
+        return ResponseEntity.badRequest().body(ApiResponse.fail(e.getMessage()));
+    }
 
     // 요청한 데이터가 없을때
     @ExceptionHandler(ResourceNotFoundException.class)

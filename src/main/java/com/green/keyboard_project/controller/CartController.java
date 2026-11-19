@@ -67,8 +67,10 @@ public class CartController {
         if (userId == null) {
             throw new UnauthenticatedException("로그인이 필요합니다.");
         }
-        int quantity = request.getQuantity() != null ? request.getQuantity() : 1;
-        cartService.updateCartItemQuantity(userId, productId, quantity);
+        if (request.getQuantity() == null) {
+            throw new InvalidStateException("유효하지 않은 상품 갯수 입니다.");
+        }
+        cartService.updateCartItemQuantity(userId, productId, request.getQuantity());
         return ResponseEntity.ok(ApiResponse.ok("수량이 변경되었습니다."));
     }
 

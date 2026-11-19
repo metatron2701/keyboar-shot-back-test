@@ -1,0 +1,10 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+app:
+  upload:
+    directory: ${PRODUCT_IMAGE_DIRECTORY:./uploads/products}
+    public-base-url: ${PRODUCT_IMAGE_BASE_URL:http://localhost:8080}

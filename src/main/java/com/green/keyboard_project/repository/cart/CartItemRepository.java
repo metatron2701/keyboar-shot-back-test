@@ -15,5 +15,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
 
     Optional<CartItem> findByUserAndProduct(User user, Product product);
 
+    boolean existsByManualBuild_ManualBuildId(int manualBuildId);
+
+    boolean existsByAutoBuild_AutoBuildId(int autoBuildId);
+
     void deleteByUser(User user);
 }

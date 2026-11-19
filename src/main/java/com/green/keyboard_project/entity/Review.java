@@ -36,13 +36,16 @@ public class Review {
     @Column(name = "rating", nullable = false)
     private Integer rating;
 
-    @Column(name = "content", nullable = false, length = 255)
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
-
-    @Column(name = "image_url", nullable = true, length = 500)
-    private String imageUrl;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt;
 
 }

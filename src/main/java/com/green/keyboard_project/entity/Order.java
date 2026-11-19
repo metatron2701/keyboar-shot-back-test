@@ -44,6 +44,9 @@ public class Order {
     @Column(name = "total_product_amount", nullable = false)
     private int totalProductAmount;
 
+    @Column(name = "coupon_discount_amount", nullable = false)
+    private int couponDiscountAmount;
+
     @Column(name = "delivery_fee", nullable = false)
     private int deliveryFee;
 
@@ -57,7 +60,7 @@ public class Order {
     private LocalDateTime createdAt;
 
     public enum OrderStatusType {
-        PENDING, ORDERED, CANCELLED
+        PENDING, ORDERED, CANCELLED, CONFIRMED
     }
 
 }

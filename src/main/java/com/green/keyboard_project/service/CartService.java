@@ -6,8 +6,8 @@ import com.green.keyboard_project.entity.Product;
 import com.green.keyboard_project.entity.User;
 import com.green.keyboard_project.exceptions.InvalidStateException;
 import com.green.keyboard_project.exceptions.ResourceNotFoundException;
-import com.green.keyboard_project.repository.product.ProductRepository;
-import com.green.keyboard_project.repository.user.UserRepository;
+import com.green.keyboard_project.repository.ProductRepository;
+import com.green.keyboard_project.repository.UserRepository;
 import com.green.keyboard_project.repository.cart.CartItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +54,7 @@ public class CartService {
     public void addCartItem(int userId, int productId, int quantity) {
         User user = findUser(userId);
         Product product = findProduct(productId);
+        validateOnSale(product);
 
         if (quantity <= 0 || quantity > product.getStockQuantity()) {
             throw new InvalidStateException("유효하지 않은 상품 갯수 입니다.");
@@ -87,6 +88,7 @@ public class CartService {
     public void updateCartItemQuantity(int userId, int productId, int quantity) {
         User user = findUser(userId);
         Product product = findProduct(productId);
+        validateOnSale(product);
 
         if (quantity <= 0 || quantity > product.getStockQuantity()) {
             throw new InvalidStateException("유효하지 않은 상품 갯수 입니다.");
@@ -128,6 +130,16 @@ public class CartService {
                     log.warn("사용자를 찾을 수 없습니다. userId={}", userId);
                     return new ResourceNotFoundException("사용자를 찾을 수 없습니다.");
                 });
+    }
+
+    /**
+     * 판매중지되었거나 삭제된 상품은 장바구니에 담거나 수량을 바꿀 수 없음
+     */
+    private void validateOnSale(Product product) {
+        if (!product.isActive() || product.isDeleted()) {
+            log.warn("판매하지 않는 상품 장바구니 요청. productId={}", product.getProductId());
+            throw new InvalidStateException("판매하지 않는 상품입니다.");
+        }
     }
 
     private Product findProduct(int productId) {
